@@ -17,7 +17,7 @@ kubectl get pods -n argocd
 ```
 
 * Create argoCD web service  
-kubectl port-forward svc/argocd-server --address 0.0.0.0 -n argocd 3007:443  
+kubectl port-forward svc/argocd-server --address 0.0.0.0 -n argocd 3007:443 &
 
 * Get password  
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo  
@@ -40,9 +40,9 @@ rm argocd-linux-amd64
 
 ## <a name="ArgoCD-CLI-create-app"></a>ArgoCD CLI create app
 
-* argocd login 127.0.0.1:3007
+argocd login 127.0.0.1:3007
 
-* kubectl create namespace nginx-ingress
+kubectl create namespace nginx-ingress
 ```
 argocd app create nginx-ingress \
 --repo https://github.com/LinX9581/nginx-ingress \
@@ -50,8 +50,9 @@ argocd app create nginx-ingress \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace nginx-ingress
 ```
+kubectl get all -n ingress-nginx
 
-* kubectl create namespace nodejs-helm-template
+kubectl create namespace nodejs-helm-template
 ```
 argocd app create nodejs-helm-template \
 --repo https://github.com/LinX9581/nodejs-helm-template \
@@ -60,10 +61,9 @@ argocd app create nodejs-helm-template \
 --dest-namespace nodejs-helm-template
 ```
 
-modify values.yaml domain name
 
-* kubectl get all -n ingress-nginx
-get loadbalancer ip and bind dns
+* get loadbalancer ip and bind dns
+kubectl get all -n ingress-nginx
 
 ## helm create your own project
 kubectl create ns nodejs-helm-template  
