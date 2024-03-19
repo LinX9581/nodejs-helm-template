@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: asia-docker.pkg.dev/nownews-analytics/nodejs-repo/nodejs-template
+  repository: asia-docker.pkg.dev/nownews-ai/nodejs-repo/nodejs-template
   pullPolicy: IfNotPresent
   tag: "4.6"
 
