@@ -27,7 +27,7 @@ admin
 password
 ```
 
-* 建立ingress  
+* create ingress  
 https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/  
 
 
@@ -61,15 +61,17 @@ argocd app create nodejs-helm-template \
 --dest-namespace nodejs-helm-template
 ```
 
-
 * get loadbalancer ip and bind dns
 kubectl get all -n ingress-nginx
+
+* bind ip to dns
+ip -> nodejs-helm-template
 
 ## helm create your own project
 kubectl create ns nodejs-helm-template  
 helm create nodejs-helm-template  
 
-要更動的地方  
+* need to changed
 image & ingress & port & configMap
 
 values.yaml (改image & ingress & port)
