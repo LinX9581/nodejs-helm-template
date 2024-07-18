@@ -42,12 +42,16 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /healthy 
+              port: 3011
+            initialDelaySeconds: 15
+            periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /healthy  
+              port: 3011
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

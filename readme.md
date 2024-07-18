@@ -16,9 +16,13 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl get pods -n argocd
 ```
 
-* Create argoCD web service  
-kubectl port-forward svc/argocd-server --address 0.0.0.0 -n argocd 3007:443 &
-
+* Create ArgoCD web service  
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'  
+  
+* Get ArgoCD LB IP  
+kubectl get svc argocd-server -n argocd  
+https://lbip  
+  
 * Get password  
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo  
 ```
