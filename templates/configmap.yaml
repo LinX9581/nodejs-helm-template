@@ -4,7 +4,7 @@ metadata:
   name: nodejs-helm-template-env
   namespace: nodejs-helm-template
 data:
-  db_host: "172.16.2.10"
+  db_host: "172.16.2.200"
   db_user: "docker"
   db_password: "00000000"
   port: "3011"
