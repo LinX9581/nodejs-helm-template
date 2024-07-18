@@ -61,11 +61,14 @@ argocd app create nodejs-helm-template \
 --dest-namespace nodejs-helm-template
 ```
 
-* get loadbalancer ip and bind dns
+* get loadbalancer ip and bind dns  
 kubectl get all -n ingress-nginx
 
-* bind ip to dns
+* bind ip to dns  
 ip -> nodejs-helm-template
+
+* get all pod  
+kubectl get all -n nodejs-helm-template  
 
 ## helm create your own project
 kubectl create ns nodejs-helm-template  

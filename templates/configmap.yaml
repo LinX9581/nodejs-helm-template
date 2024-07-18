@@ -7,3 +7,4 @@ data:
   db_host: "172.16.2.10"
   db_user: "docker"
   db_password: "00000000"
+  port: 3011
