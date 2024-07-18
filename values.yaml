@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: asia-docker.pkg.dev/nownews-analytics/nodejs-repo/nodejs-template
   pullPolicy: IfNotPresent
-  tag: "2.1"
+  tag: "2.2"
 
 imagePullSecrets: []
 nameOverride: ""

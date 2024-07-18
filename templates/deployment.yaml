@@ -42,13 +42,13 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /healthy 
+              path: /pod-health 
               port: 3011
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /healthy  
+              path: /pod-health  
               port: 3011
             initialDelaySeconds: 5
             periodSeconds: 10
