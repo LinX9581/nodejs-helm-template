@@ -26,7 +26,7 @@ https://lbip
 * Get password  
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo  
 ```
-127.0.0.1:3007
+https://lbip  
 admin
 password
 ```
@@ -44,7 +44,7 @@ rm argocd-linux-amd64
 
 ## <a name="ArgoCD-CLI-create-app"></a>ArgoCD CLI create app
 
-argocd login 127.0.0.1:3007
+argocd login lbip
 
 kubectl create namespace nginx-ingress
 ```
