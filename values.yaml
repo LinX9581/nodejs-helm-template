@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: asia-docker.pkg.dev/nownews-terraform/nodejs-repo/nodejs-template
   pullPolicy: IfNotPresent
-  tag: "2.6"
+  tag: "2.7.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -37,6 +37,10 @@ securityContext: {}
 
 service:
   type: ClusterIP
+  port: 3011
+
+# 新增以下配置
+application:
   port: 3011
 
 ingress:

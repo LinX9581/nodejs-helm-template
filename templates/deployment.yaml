@@ -38,18 +38,18 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 3011
+              containerPort: {{ .Values.application.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /pod-health 
-              port: 3011
+              port: {{ .Values.application.port }}
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             httpGet:
               path: /pod-health  
-              port: 3011
+              port: {{ .Values.application.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:
