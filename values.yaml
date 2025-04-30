@@ -47,17 +47,39 @@ ingress:
   enabled: true
   className: nginx
   annotations:
+    # 安全性與基本設定
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: /  ## 加了後任何路徑都會導到 /
-    # 將 /wp-content 和 /wp-admin 路徑設為返回 404
+    
+    # 效能優化
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    
+    # 安全性設定
+    nginx.ingress.kubernetes.io/server-tokens: "false"
+    nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
+    
+    # 配置段落 - 使用統一方式管理路徑規則
     nginx.ingress.kubernetes.io/configuration-snippet: |
+      # 阻擋特定路徑返回 404
       location ~ ^/(wp-content|wp-admin) {
         return 404;
       }
-      location = /test {
-        return 301 /;
-      }
+      
+      # 路徑重定向
+      rewrite ^/test$ / permanent;
+      
+      # 增加常見安全標頭
+      add_header X-Frame-Options "SAMEORIGIN";
+      add_header X-Content-Type-Options "nosniff";
+      add_header X-XSS-Protection "1; mode=block";
+      
+      # 啟用 gzip 壓縮提高性能
+      gzip on;
+      gzip_min_length 1000;
+      gzip_types text/plain text/css application/json application/javascript application/x-javascript text/javascript;
   hosts:
     - host: nodejs.linx.blog
       paths:
@@ -67,14 +89,16 @@ ingress:
       paths:
         - path: /(.*)
           pathType: Prefix
-          # 將 report.linx.blog 導向到 /report 路徑
           annotations:
             nginx.ingress.kubernetes.io/rewrite-target: /report/$1
+            # 為特定域名添加快取配置
+            nginx.ingress.kubernetes.io/configuration-snippet: |
+              proxy_cache_valid 200 302 10m;
+              proxy_cache_valid 404 1m;
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: Prefix
-          # 將 home.linx.blog 轉發到 nodejs.linx.blog
           annotations:
             nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
 
