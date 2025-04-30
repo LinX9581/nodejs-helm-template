@@ -90,17 +90,17 @@ ingress:
         - path: /(.*)
           pathType: Prefix
           annotations:
-            # 使用 permanent-redirect 重定向到 nodejs.linx.blog
-            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
-            nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
+            # 使用 configuration-snippet 進行重定向，更可靠
+            nginx.ingress.kubernetes.io/configuration-snippet: |
+              return 301 https://nodejs.linx.blog$request_uri;
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: Prefix
           annotations:
-            # 使用 permanent-redirect 重定向到 nodejs.linx.blog
-            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
-            nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
+            # 使用 configuration-snippet 進行重定向，更可靠
+            nginx.ingress.kubernetes.io/configuration-snippet: |
+              return 301 https://nodejs.linx.blog$request_uri;
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -116,7 +116,7 @@ resources: {}
 
 autoscaling:
   enabled: false
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
