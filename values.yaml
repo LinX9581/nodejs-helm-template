@@ -50,6 +50,14 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /  ## 加了後任何路徑都會導到 /
+    # 將 /wp-content 和 /wp-admin 路徑設為返回 404
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      location ~ ^/(wp-content|wp-admin) {
+        return 404;
+      }
+      location = /test {
+        return 301 /;
+      }
   hosts:
     - host: nodejs.linx.blog
       paths:
