@@ -61,14 +61,14 @@ ingress:
     nginx.ingress.kubernetes.io/server-tokens: "false"
     nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
     
-    # 配置段落 - 使用統一方式管理路徑規則
+    # 配置段落 - 使用 configuration-snippet 而非 location 區塊
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # 阻擋特定路徑返回 404
       location ~ ^/(wp-content|wp-admin) {
         return 404;
       }
       
-      # 路徑重定向
+      # 路徑重定向 - 使用 rewrite 而非 location
       rewrite ^/test$ / permanent;
       
       # 增加常見安全標頭
@@ -90,17 +90,17 @@ ingress:
         - path: /(.*)
           pathType: Prefix
           annotations:
-            # 將 report.linx.blog 重定向到 nodejs.linx.blog
-            # 如果是 /report/xxx 則轉到 nodejs.linx.blog/report/xxx
-            # 其他路徑轉到 nodejs.linx.blog
-            nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
+            # 使用 permanent-redirect 重定向到 nodejs.linx.blog
+            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
+            nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: Prefix
           annotations:
-            # 將 home.linx.blog 重定向到 nodejs.linx.blog
-            nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
+            # 使用 permanent-redirect 重定向到 nodejs.linx.blog
+            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
+            nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
