@@ -90,16 +90,16 @@ ingress:
         - path: /(.*)
           pathType: Prefix
           annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: /report/$1
-            # 為特定域名添加快取配置
-            nginx.ingress.kubernetes.io/configuration-snippet: |
-              proxy_cache_valid 200 302 10m;
-              proxy_cache_valid 404 1m;
+            # 將 report.linx.blog 重定向到 nodejs.linx.blog
+            # 如果是 /report/xxx 則轉到 nodejs.linx.blog/report/xxx
+            # 其他路徑轉到 nodejs.linx.blog
+            nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: Prefix
           annotations:
+            # 將 home.linx.blog 重定向到 nodejs.linx.blog
             nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
 
 resources: {}
