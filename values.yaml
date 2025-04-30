@@ -55,6 +55,20 @@ ingress:
       paths:
         - path: /(.*)
           pathType: Prefix
+    - host: report.linx.blog
+      paths:
+        - path: /(.*)
+          pathType: Prefix
+          # 將 report.linx.blog 導向到 /report 路徑
+          annotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /report/$1
+    - host: home.linx.blog
+      paths:
+        - path: /(.*)
+          pathType: Prefix
+          # 將 home.linx.blog 轉發到 nodejs.linx.blog
+          annotations:
+            nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
