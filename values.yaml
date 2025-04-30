@@ -61,6 +61,18 @@ ingress:
     nginx.ingress.kubernetes.io/server-tokens: "false"
     nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
     
+    # 伺服器級別重定向設定 (server-snippet 在伺服器級別處理)
+    nginx.ingress.kubernetes.io/server-snippet: |
+      # home.linx.blog 重定向到 nodejs.linx.blog
+      if ($host = 'home.linx.blog') {
+        return 301 https://nodejs.linx.blog$request_uri;
+      }
+      
+      # report.linx.blog 重定向到 nodejs.linx.blog
+      if ($host = 'report.linx.blog') {
+        return 301 https://nodejs.linx.blog$request_uri;
+      }
+    
     # 配置段落 - 使用 configuration-snippet 而非 location 區塊
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # 阻擋特定路徑返回 404
@@ -89,18 +101,10 @@ ingress:
       paths:
         - path: /(.*)
           pathType: Prefix
-          annotations:
-            # 使用 configuration-snippet 進行重定向，更可靠
-            nginx.ingress.kubernetes.io/configuration-snippet: |
-              return 301 https://nodejs.linx.blog$request_uri;
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: Prefix
-          annotations:
-            # 使用 configuration-snippet 進行重定向，更可靠
-            nginx.ingress.kubernetes.io/configuration-snippet: |
-              return 301 https://nodejs.linx.blog$request_uri;
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
