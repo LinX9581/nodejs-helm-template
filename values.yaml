@@ -47,38 +47,19 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    # 伺服器級別重定向設定 (server-snippet 在伺服器級別處理)
-    nginx.ingress.kubernetes.io/server-snippet: |
-      # home.linx.blog 重定向到 nodejs.linx.blog
-      if ($host = 'home.linx.blog') {
-        return 301 https://nodejs.linx.blog$request_uri;
-      }
-      
-      # report.linx.blog 重定向到 nodejs.linx.blog
-      if ($host = 'report.linx.blog') {
-        return 301 https://nodejs.linx.blog$request_uri;
-      }
-    
-    # 配置段落 - 使用 configuration-snippet 而非 location 區塊
+    nginx.ingress.kubernetes.io/rewrite-target: /  # 用於 /test 重定向到 /
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      # 阻擋特定路徑返回 404
-      if ($request_uri ~* "^/(wp-content|wp-admin)") {
+      # 重定向 /test 到 /
+      rewrite ^/test$ / permanent;
+      # 返回 404 給 /wp-content 和 /wp-admin
+      location ~* ^/wp-content {
         return 404;
       }
-      
-      # 路徑重定向 - 使用 rewrite 而非 location
-      rewrite ^/test$ / permanent;
-      
+      location ~* ^/wp-admin {
+        return 404;
+      }
   hosts:
     - host: nodejs.linx.blog
-      paths:
-        - path: /(.*)
-          pathType: ImplementationSpecific
-    - host: report.linx.blog
-      paths:
-        - path: /(.*)
-          pathType: ImplementationSpecific
-    - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: ImplementationSpecific
