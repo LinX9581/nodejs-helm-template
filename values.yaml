@@ -47,57 +47,41 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    # 安全性與基本設定
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    # 伺服器級別重定向設定 (server-snippet 在伺服器級別處理)
+    nginx.ingress.kubernetes.io/server-snippet: |
+      # home.linx.blog 重定向到 nodejs.linx.blog
+      if ($host = 'home.linx.blog') {
+        return 301 https://nodejs.linx.blog$request_uri;
+      }
+      
+      # report.linx.blog 重定向到 nodejs.linx.blog
+      if ($host = 'report.linx.blog') {
+        return 301 https://nodejs.linx.blog$request_uri;
+      }
     
-    # 效能優化
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
-    
-    # 安全性設定
-    nginx.ingress.kubernetes.io/server-tokens: "false"
-    nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
-    
-    # 阻擋特定路徑 (使用標準註解代替 snippet)
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
-    
-    # 增加安全標頭（使用標準註解代替 snippet）
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
-    nginx.ingress.kubernetes.io/x-frame-options: "SAMEORIGIN"
-    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256"
-    
-    # 啟用 GZIP 壓縮 (使用標準註解代替 snippet)
-    nginx.ingress.kubernetes.io/enable-gzip: "true"
-    nginx.ingress.kubernetes.io/gzip-types: "application/javascript application/x-javascript text/javascript text/css application/json"
-    nginx.ingress.kubernetes.io/gzip-min-length: "1000"
+    # 配置段落 - 使用 configuration-snippet 而非 location 區塊
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # 阻擋特定路徑返回 404
+      location ~ ^/(wp-content|wp-admin) {
+        return 404;
+      }
+      
+      # 路徑重定向 - 使用 rewrite 而非 location
+      rewrite ^/test$ / permanent;
+      
   hosts:
-    # 主要應用的 host
     - host: nodejs.linx.blog
       paths:
         - path: /(.*)
-          pathType: ImplementationSpecific
-    # 重定向用途的 hosts (將通過註解重定向到主要 host)
+          pathType: Prefix
     - host: report.linx.blog
       paths:
         - path: /(.*)
-          pathType: ImplementationSpecific
-      # 使用 permanent-redirect 替代 snippet 重定向
-      annotations:
-        nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
+          pathType: Prefix
     - host: home.linx.blog
       paths:
         - path: /(.*)
-          pathType: ImplementationSpecific
-      # 使用 permanent-redirect 替代 snippet 重定向
-      annotations:
-        nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
+          pathType: Prefix
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
