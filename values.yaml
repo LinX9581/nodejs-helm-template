@@ -96,15 +96,15 @@ ingress:
     - host: nodejs.linx.blog
       paths:
         - path: /(.*)
-          pathType: Prefix
+          pathType: ImplementationSpecific
     - host: report.linx.blog
       paths:
         - path: /(.*)
-          pathType: Prefix
+          pathType: ImplementationSpecific
     - host: home.linx.blog
       paths:
         - path: /(.*)
-          pathType: Prefix
+          pathType: ImplementationSpecific
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
