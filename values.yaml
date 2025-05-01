@@ -62,7 +62,7 @@ ingress:
     # 配置段落 - 使用 configuration-snippet 而非 location 區塊
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # 阻擋特定路徑返回 404
-      location ~ ^/(wp-content|wp-admin) {
+      if ($request_uri ~* "^/(wp-content|wp-admin)") {
         return 404;
       }
       
