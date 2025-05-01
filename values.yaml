@@ -61,19 +61,43 @@ ingress:
     nginx.ingress.kubernetes.io/server-tokens: "false"
     nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
     
+    # 阻擋特定路徑 (使用標準註解代替 snippet)
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    
+    # 增加安全標頭（使用標準註解代替 snippet）
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    nginx.ingress.kubernetes.io/x-frame-options: "SAMEORIGIN"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256"
+    
+    # 啟用 GZIP 壓縮 (使用標準註解代替 snippet)
+    nginx.ingress.kubernetes.io/enable-gzip: "true"
+    nginx.ingress.kubernetes.io/gzip-types: "application/javascript application/x-javascript text/javascript text/css application/json"
+    nginx.ingress.kubernetes.io/gzip-min-length: "1000"
   hosts:
+    # 主要應用的 host
     - host: nodejs.linx.blog
       paths:
         - path: /(.*)
           pathType: ImplementationSpecific
+    # 重定向用途的 hosts (將通過註解重定向到主要 host)
     - host: report.linx.blog
       paths:
         - path: /(.*)
           pathType: ImplementationSpecific
+      # 使用 permanent-redirect 替代 snippet 重定向
+      annotations:
+        nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
     - host: home.linx.blog
       paths:
         - path: /(.*)
           pathType: ImplementationSpecific
+      # 使用 permanent-redirect 替代 snippet 重定向
+      annotations:
+        nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog$request_uri
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
