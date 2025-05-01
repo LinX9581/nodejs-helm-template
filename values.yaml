@@ -61,37 +61,6 @@ ingress:
     nginx.ingress.kubernetes.io/server-tokens: "false"
     nginx.ingress.kubernetes.io/hide-headers: "X-Powered-By"
     
-    # 伺服器級別重定向設定 (server-snippet 在伺服器級別處理)
-    nginx.ingress.kubernetes.io/server-snippet: |
-      # home.linx.blog 重定向到 nodejs.linx.blog
-      if ($host = 'home.linx.blog') {
-        return 301 https://nodejs.linx.blog$request_uri;
-      }
-      
-      # report.linx.blog 重定向到 nodejs.linx.blog
-      if ($host = 'report.linx.blog') {
-        return 301 https://nodejs.linx.blog$request_uri;
-      }
-    
-    # 配置段落 - 使用 configuration-snippet 而非 location 區塊
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      # 阻擋特定路徑返回 404
-      location ~ ^/(wp-content|wp-admin) {
-        return 404;
-      }
-      
-      # 路徑重定向 - 使用 rewrite 而非 location
-      rewrite ^/test$ / permanent;
-      
-      # 增加常見安全標頭
-      add_header X-Frame-Options "SAMEORIGIN";
-      add_header X-Content-Type-Options "nosniff";
-      add_header X-XSS-Protection "1; mode=block";
-      
-      # 啟用 gzip 壓縮提高性能
-      gzip on;
-      gzip_min_length 1000;
-      gzip_types text/plain text/css application/json application/javascript application/x-javascript text/javascript;
   hosts:
     - host: nodejs.linx.blog
       paths:
