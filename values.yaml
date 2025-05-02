@@ -45,31 +45,107 @@ application:
 
 ingress:
   enabled: true
-  className: nginx
+  className: nginx # As provided by user
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /  # 用於 /test 重定向到 /
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      # 重定向 /test 到 /
-      rewrite ^/test$ / permanent;
-      # 返回 404 給 /wp-content 和 /wp-admin
-      location ~* ^/wp-content {
-        return 404;
-      }
-      location ~* ^/wp-admin {
-        return 404;
-      }
+    # Enable regex matching for paths
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Add any other required global annotations here
   hosts:
-    - host: nodejs.linx.blog
+    # Host: nodejs.linx.blog (Original and target host)
+    - host: nodejs.linx.blog # Define the host, potentially source from values: {{.Values.ingress.host }}
       paths:
-        - path: /(.*)
+        # /test Redirect
+        - path: /test
+          pathType: Prefix # Or Exact
+          # Annotation specific to this path
+          annotations:
+            nginx.ingress.kubernetes.io/permanent-redirect: "/"
+          # Backend definition is syntactically required by Ingress schema even if unused for redirects.
+          # Point it to the application service.
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # /wp-content Route to App for 404 Handling
+        - path: /wp-content(/.*)? # Match prefix or use regex
+          pathType: ImplementationSpecific # Use ImplementationSpecific if regex used, Prefix otherwise
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # /wp-admin Route to App for 404 Handling
+        - path: /wp-admin(/.*)?
+          pathType: ImplementationSpecific # Use ImplementationSpecific if regex used, Prefix otherwise
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # /news/ Proxy & Rewrite
+        - path: /news(/.*) # Regex capture required
           pathType: ImplementationSpecific
-    # 新增 home.linx.blog 的重定向配置
+          annotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /NOWnews/content.jsp?newsUrl=/news/$1 # Verify $args behavior
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }} # Assumes this service maps to 'servlet'
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # /cat/ Proxy & Rewrite (Case 1)
+        - path: /cat/([^/]+)/page/(\d+)/ # Regex capture
+          pathType: ImplementationSpecific
+          annotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /NOWnews/newsListPager.jsp?newsUrl=/cat/$1/page/$2/
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # /cat/ Proxy & Rewrite (Case 2)
+        - path: /cat/([^/]+)/([^/]+)/page/(\d+)/ # Regex capture
+          pathType: ImplementationSpecific
+          annotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /NOWnews/newsListPager.jsp?newsUrl=/cat/$1/$2/page/$3/
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+        # Default Backend Route (Optional but recommended catch-all for the host)
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }}
+              port:
+                number: {{.Values.service.port }} # 3011
+
+    # Host: home.linx.blog (Redirect to nodejs.linx.blog)
     - host: home.linx.blog
       paths:
         - path: /
           pathType: Prefix
           annotations:
-            nginx.ingress.kubernetes.io/permanent-redirect: https://nodejs.linx.blog
+            # Redirects to the target domain, preserving the request URI (path + query) [8, 9, 26]
+            # Note: Using $request_uri might have issues with annotation validation [10, 27]
+            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
+            # Optional: Use 308 instead of default 301
+            # nginx.ingress.kubernetes.io/permanent-redirect-code: "308"
+          # Dummy backend required by schema
+          backend:
+            service:
+              name: {{ include "nodejs-helm-template.fullname". }} # Can point to any valid service
+              port:
+                number: {{.Values.service.port }} # 3011
+                
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
