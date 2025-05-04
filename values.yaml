@@ -56,7 +56,7 @@ ingress:
       paths:
         # /test Redirect
         - path: /test
-          pathType: Prefix # Or Exact
+          pathType: Prefix1 # Or Exact
           # Annotation specific to this path
           annotations:
             nginx.ingress.kubernetes.io/permanent-redirect: "/"
