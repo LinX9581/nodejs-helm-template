@@ -1,6 +1,5 @@
 # Default values for nodejs-helm-template.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Gateway API + GKE 版本
 
 replicaCount: 2
 
@@ -14,142 +13,68 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
+# ---------- Service ----------
 service:
   type: ClusterIP
   port: 3011
 
-# 新增以下配置
 application:
   port: 3011
 
-ingress:
+# ---------- Gateway API (取代 nginx-ingress) ----------
+gateway:
   enabled: true
-  className: nginx # As provided by user
-  annotations:
-    # Enable regex matching for paths
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    # Add any other required global annotations here
-  hosts:
-    # Host: nodejs.linx.blog (Original and target host)
-    - host: nodejs.linx.blog # Define the host
-      paths:
-        # /test Redirect
-        - path: /test
-          pathType: Prefix1 # Or Exact
-          # Annotation specific to this path
-          annotations:
-            nginx.ingress.kubernetes.io/permanent-redirect: "/"
-          # Backend definition is syntactically required by Ingress schema even if unused for redirects.
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+  gatewayName: app-gateway        # argocd.sh 建立的 Gateway
+  gatewayNamespace: default
 
-        # /wp-content Route to App for 404 Handling
-        - path: /wp-content(/.*)?  # Match prefix or use regex
-          pathType: ImplementationSpecific  # Use ImplementationSpecific if regex used, Prefix otherwise
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+  # 主要路由 (非重定向的 hostname)
+  routes:
+    - hostname: nodejs.linx.bar
 
-        # /wp-admin Route to App for 404 Handling
-        - path: /wp-admin(/.*)?
-          pathType: ImplementationSpecific  # Use ImplementationSpecific if regex used, Prefix otherwise
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+  # 特殊路徑規則 (可選)
+  # 不列在這裡的路徑都會走預設的 / → backendRef
+  rules:
+    # /test → 重定向到首頁
+    - path: /test
+      pathType: Exact
+      redirect:
+        path: /
+        statusCode: 302
 
-        # /news/ Proxy & Rewrite
-        - path: /news(/.*) # Regex capture required
-          pathType: ImplementationSpecific
-          annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: "/NOWnews/content.jsp?newsUrl=/news/$1" # Verify $args behavior
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+    # /wp-content, /wp-admin → 走 app 處理 (回 404)
+    - path: /wp-content
+      pathType: PathPrefix
 
-        # /cat/ Proxy & Rewrite (Case 1)
-        - path: /cat/([^/]+)/page/(\d+)/ # Regex capture
-          pathType: ImplementationSpecific
-          annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: "/NOWnews/newsListPager.jsp?newsUrl=/cat/$1/page/$2/"
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+    - path: /wp-admin
+      pathType: PathPrefix
 
-        # /cat/ Proxy & Rewrite (Case 2)
-        - path: /cat/([^/]+)/([^/]+)/page/(\d+)/ # Regex capture
-          pathType: ImplementationSpecific
-          annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: "/NOWnews/newsListPager.jsp?newsUrl=/cat/$1/$2/page/$3/"
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+    # /news, /cat 等複雜路由 → 走 app 內部處理
+    # Gateway API 不支援 regex capture group rewrite
+    # 建議在 Node.js app 內用 express router 處理:
+    #   app.get('/news/*', (req, res) => { ... })
+    #   app.get('/cat/*', (req, res) => { ... })
+    - path: /news
+      pathType: PathPrefix
 
-        # Default Backend Route (Optional but recommended catch-all for the host)
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
+    - path: /cat
+      pathType: PathPrefix
 
-    # Host: home.linx.blog (Redirect to nodejs.linx.blog)
-    - host: home.linx.blog
-      paths:
-        - path: /
-          pathType: Prefix
-          annotations:
-            # Redirects to the target domain, preserving the request URI (path + query)
-            # Note: Using $request_uri might have issues with annotation validation
-            nginx.ingress.kubernetes.io/permanent-redirect: "https://nodejs.linx.blog$request_uri"
-            # Optional: Use 308 instead of default 301
-            # nginx.ingress.kubernetes.io/permanent-redirect-code: "308"
-          # Dummy backend required by schema
-          backend:
-            service:
-              name: ""  # Will be set in template
-              port:
-                number: 3011
-                                
+  # 網域重定向 (整個 host → 另一個 host)
+  redirectRoutes:
+    - hostname: home.linx.bar
+      targetHostname: nodejs.linx.bar
+      statusCode: 301
+
+# ---------- Resources ----------
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
@@ -157,15 +82,13 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# ---------- Autoscaling ----------
 autoscaling:
   enabled: false
   minReplicas: 2
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
