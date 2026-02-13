@@ -17,7 +17,8 @@ serviceAccount:
   annotations: {}
   name: ""
 
-podAnnotations: {}
+podAnnotations:
+  instrumentation.opentelemetry.io/inject-nodejs: "true"
 podSecurityContext: {}
 securityContext: {}
 
