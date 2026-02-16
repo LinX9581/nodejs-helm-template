@@ -90,6 +90,7 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
-nodeSelector: {}
+nodeSelector:
+  workload: app
 tolerations: []
 affinity: {}
