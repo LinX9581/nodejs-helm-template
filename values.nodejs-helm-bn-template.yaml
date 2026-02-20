@@ -1,9 +1,9 @@
 # nodejs-helm-bn-template values
 
 image:
-  repository: docker.io/library/nginx
+  repository: asia-docker.pkg.dev/nownews-terraform/nodejs-dev-template/nodejs-dev-fn-template
   pullPolicy: IfNotPresent
-  tag: "1.27-alpine"
+  tag: "1.0.1"
 
 imagePullSecrets: []
 nameOverride: ""
