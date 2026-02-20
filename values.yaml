@@ -109,8 +109,8 @@ resources: {}
 # ---------- Autoscaling ----------
 autoscaling:
   enabled: true
-  minReplicas: 3
-  maxReplicas: 100
+  minReplicas: 5
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
 updateStrategy:
