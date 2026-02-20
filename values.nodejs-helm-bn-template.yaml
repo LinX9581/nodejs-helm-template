@@ -47,7 +47,7 @@ envFrom:
 resources: {}
 
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 4
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
