@@ -17,10 +17,14 @@ serviceAccount:
   annotations: {}
   name: ""
 
-podAnnotations:
-  instrumentation.opentelemetry.io/inject-nodejs: "true"
+podAnnotations: {}
 podSecurityContext: {}
 securityContext: {}
+
+otel:
+  enabled: true
+  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
+  injectorAnnotationValue: "true"
 
 # ---------- Service ----------
 service:
@@ -29,6 +33,20 @@ service:
 
 application:
   port: 3011
+
+configMap:
+  create: true
+  # 空字串時會使用: <release-fullname>-env
+  name: ""
+  data: {}
+
+envFrom:
+  configMap:
+    enabled: true
+    # 空字串時會使用 configMap.name / <release-fullname>-env
+    name: ""
+  configMapRefs: []
+  secretRefs: []
 
 # ---------- Gateway API (取代 nginx-ingress) ----------
 gateway:

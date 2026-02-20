@@ -1,0 +1,69 @@
+# nodejs-helm-bn-template values
+
+image:
+  repository: docker.io/library/nginx
+  pullPolicy: IfNotPresent
+  tag: "1.27-alpine"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+otel:
+  enabled: true
+  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
+  injectorAnnotationValue: "true"
+
+service:
+  type: ClusterIP
+  port: 3022
+
+application:
+  port: 3022
+
+configMap:
+  create: true
+  name: ""
+  data:
+    APP_ENV: "prod"
+    PORT: "3022"
+
+envFrom:
+  configMap:
+    enabled: true
+    name: ""
+  configMapRefs: []
+  secretRefs: []
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector:
+  workload: app
+tolerations: []
+affinity: {}
+
+gateway:
+  enabled: true
+  gatewayName: app-gateway
+  gatewayNamespace: default
+  routes:
+    - hostname: nodejs-bn.linx.bar
+  rules:
+    - path: /
+      pathType: PathPrefix
+  redirectRoutes: []

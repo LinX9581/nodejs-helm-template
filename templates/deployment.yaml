@@ -13,10 +13,13 @@ spec:
       {{- include "nodejs-helm-template.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        {{- if .Values.otel.enabled }}
+        {{ .Values.otel.injectorAnnotationKey }}: {{ .Values.otel.injectorAnnotationValue | quote }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "nodejs-helm-template.selectorLabels" . | nindent 8 }}
     spec:
@@ -32,9 +35,22 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- $configMapName := .Values.envFrom.configMap.name | default (include "nodejs-helm-template.configMapName" .) }}
+          {{- if or .Values.envFrom.configMap.enabled (gt (len .Values.envFrom.configMapRefs) 0) (gt (len .Values.envFrom.secretRefs) 0) }}
           envFrom:
+          {{- if .Values.envFrom.configMap.enabled }}
           - configMapRef:
-              name: nodejs-helm-template-env
+              name: {{ $configMapName }}
+          {{- end }}
+          {{- range .Values.envFrom.configMapRefs }}
+          - configMapRef:
+              name: {{ . }}
+          {{- end }}
+          {{- range .Values.envFrom.secretRefs }}
+          - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

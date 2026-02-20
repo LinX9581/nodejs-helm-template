@@ -1,181 +1,93 @@
-# Step
-1. [ArgoCD Install](#argocd-install) 
-2. [ArgoCD CLI Install](#ArgoCD-CLI-Install) 
-3. [ArgoCD CLI create demo app](#ArgoCD-CLI-create-demo-app)
-4. [helm create project & push repo to github](#helm-create-project)
-5. bind private repo  
-7. ArgoCD CLI sync app  
+# nodejs-helm-template
 
-## <a name="argocd-install"></a>ArgoCD Install
-argoCD 會建立一個很大權限的service account 來管理 k8s cluster  
-所以VM要有相對應的IAM權限 才能建立 ArgoCD  
+Node.js Helm 基礎模板，預設支援：
+- Gateway API (`HTTPRoute`)
+- OpenTelemetry injector annotation
+- ConfigMap / Secret envFrom
+- HPA / resources / scheduling 設定
 
-```
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl get pods -n argocd
-```
+## 1) 快速使用（建議）
+不要複製整個 repo。保留一份 chart，為每個專案建立自己的 values 檔。
 
-* Create ArgoCD web service  
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'  
-  
-* Get ArgoCD LB IP  
-kubectl get svc argocd-server -n argocd  
-https://lbip  
-  
-* Get password  
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo  
+1. 複製範本：
+```bash
+cp values.project-template.yaml values-myapp.yaml
 ```
-https://lbip  
-admin
-password
+2. 修改 `values-myapp.yaml`：
+- `image.repository`, `image.tag`
+- `application.port`, `service.port`
+- `gateway.routes`, `gateway.redirectRoutes`
+- `configMap.data`, `envFrom.secretRefs`
+3. 安裝/更新：
+```bash
+helm upgrade --install myapp . \
+  -n myapp-ns \
+  --create-namespace \
+  -f values-myapp.yaml
 ```
 
-* create ingress  
-https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/  
+## 2) 移植到新專案（同一叢集）
+每個新專案只要確保以下三項不同即可：
+- `release name` 不同（例如 `myapp`, `newsapp`）
+- `namespace` 不同（例如 `myapp-ns`, `newsapp-ns`）
+- `gateway hostname/path` 不互相衝突
 
-
-## <a name="ArgoCD-CLI-Install"></a>ArgoCD CLI Install
+範例：
+```bash
+helm upgrade --install newsapp . \
+  -n newsapp-ns \
+  --create-namespace \
+  -f values-newsapp.yaml
 ```
-curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-rm argocd-linux-amd64
+
+## 3) 你提到的「整包複製 repo」做法（可行，但不建議）
+如果你一定要複製整個資料夾：
+1. 複製目錄並改資料夾名。
+2. 準備新 `values-<project>.yaml`（可由 `values.project-template.yaml` 複製）。
+3. 用新 `release` + 新 `namespace` 部署。
+
+注意：
+- 只改資料夾名稱不代表資源名稱會變；資源名稱主要看 Helm `release name`。
+- 若同 namespace + 同 release 安裝，才會衝突。
+
+## 4) 常用指令
+Render 檢查：
+```bash
+helm template myapp . -f values-myapp.yaml
 ```
 
-## <a name="ArgoCD-CLI-create-app"></a>ArgoCD CLI create app
-
-argocd login lbip
-
-kubectl create namespace nginx-ingress
+套件檢查：
+```bash
+helm lint . -f values-myapp.yaml
 ```
-argocd app create nginx-ingress \
---repo https://github.com/LinX9581/nginx-ingress \
---path . \
---dest-server https://kubernetes.default.svc \
---dest-namespace nginx-ingress
-```
-kubectl get all -n ingress-nginx
 
-kubectl create namespace nodejs-helm-template
-```
+## 5) ArgoCD 佈署方式
+如果要用 ArgoCD 佈署這個 chart，重點是 `Application` 要指定 repo/path/namespace，並指定 values 檔。
+
+CLI 範例（佈署 `nodejs-helm-template`）：
+```bash
 argocd app create nodejs-helm-template \
---repo https://github.com/LinX9581/nodejs-helm-template \
---path . \
---dest-server https://kubernetes.default.svc \
---dest-namespace nodejs-helm-template
+  --repo https://github.com/LinX9581/nodejs-helm-template \
+  --path . \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace nodejs-helm-template \
+  --values values.project-template.yaml \
+  --upsert
 ```
 
-* get loadbalancer ip and bind dns  
-kubectl get all -n ingress-nginx
-
-* bind ip to dns  
-ip -> nodejs-helm-template
-
-* get all pod  
-kubectl get all -n nodejs-helm-template  
-
-## helm create your own project
-kubectl create ns nodejs-helm-template  
-helm create nodejs-helm-template  
-
-* need to changed
-image & ingress & port & configMap
-
-values.yaml (改image & ingress & port)
-```
-image:
-  repository: asia.gcr.io/nownews-analytics/nodejs-template
-  pullPolicy: IfNotPresent
-  tag: "4.2"
-
-service:
-  type: ClusterIP
-  port: 3006
-
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  hosts:
-    - host: nodejs-helm-template.linx.website
-      paths:
-        - path: /(.*)
-          pathType: Prefix
+CLI 範例（第二個 App：`nodejs-helm-bn-template`，同 chart 不同 values）：
+```bash
+argocd app create nodejs-helm-bn-template \
+  --repo https://github.com/LinX9581/nodejs-helm-template \
+  --path . \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace nodejs-helm-bn-template \
+  --values values.nodejs-helm-bn-template.yaml \
+  --upsert
 ```
 
-configMap.yaml
+更新/同步：
+```bash
+argocd app sync nodejs-helm-template
+argocd app sync nodejs-helm-bn-template
 ```
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nodejs-helm-template-env
-  namespace: nodejs-helm-template
-data:
-  db_host: "172.16.2.10"
-  db_user: "docker"
-  db_password: "00000000"
-```
-
-deployment.yaml (改port & 綁定configMap)
-```
-image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-envFrom:
-- configMapRef:
-    name: nodejs-helm-template-env
-imagePullPolicy: {{ .Values.image.pullPolicy }}
-ports:
-- name: http
-    containerPort: 3006
-    protocol: TCP
-```
-
-## bind private repo
-```
-public key to github  
-argoui -> setting -> connect repo -> ssh  
-argocd repo add git@github.com:LinX9581/nodejs2.git --ssh-private-key-path var/www/rsa_id  
-```
-
-## ArgoCD Connect to Github/Other
-```
-預設只有常見的 gitlab.com github.com  
-只要確保公Key有在github上 私Key在ui 建立repo 有放上去即可
-
-如果是自己的私網域要另外新增連線方式
-可以從 ui -> setting -> Repository certificates and known hosts
-新增的內容 把以下指令的內容全貼上
-ssh-keyscan gitlab.test.com
-```
-
-## 基本原理
-```
-ArgoCD 是走 GitOps
-根據 Repo 來生成整個環境
-所以原先如果已經
-helm install -n nodejs-template1 helm-release1 ./
-那就會變兩個相同環境 導致像是 ingress 重複而出錯
-```
-
-## 部屬策略
-* Recreate 直接砍掉舊 等新的佈署完畢
-
-* Ramped 新舊 逐一替換
-
-* Blue/Green 新的好 直接全換新
-
-* Canary 新舊並行 流量慢慢導到新的
-
-* A/B testing 新舊並行
-
-* Shadow  
-同時並行 確認完全無誤才移除舊版本
-
-# ref
-建立  
-https://ithelp.ithome.com.tw/articles/10268662  
-
-部屬策略  
-https://ithelp.ithome.com.tw/articles/10245433  

@@ -1,0 +1,86 @@
+# Copy this file for each new project, then only update these fields.
+
+image:
+  repository: asia-docker.pkg.dev/your-gcp-project/your-repo/your-app
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  port: 3000
+
+application:
+  port: 3000
+
+otel:
+  enabled: true
+  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
+  injectorAnnotationValue: "true"
+
+configMap:
+  create: true
+  # Leave empty to auto-generate "<release-fullname>-env"
+  name: ""
+  data:
+    APP_ENV: "prod"
+    PORT: "3000"
+    DB_HOST: "10.0.0.10"
+    DB_USER: "app_user"
+
+envFrom:
+  configMap:
+    enabled: true
+    name: ""
+  configMapRefs: []
+  secretRefs:
+    - app-secrets
+
+# ---------- Resources ----------
+resources: {}
+# resources:
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+
+# ---------- Autoscaling ----------
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector:
+  workload: app
+tolerations: []
+affinity: {}
+
+gateway:
+  enabled: true
+  gatewayName: app-gateway
+  gatewayNamespace: default
+  routes:
+    - hostname: app.example.com
+  rules:
+    - path: /healthz
+      pathType: Exact
+    - path: /
+      pathType: PathPrefix
+  redirectRoutes:
+    - hostname: www.app.example.com
+      targetHostname: app.example.com
+      statusCode: 301

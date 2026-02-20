@@ -60,3 +60,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create ConfigMap name for app env.
+*/}}
+{{- define "nodejs-helm-template.configMapName" -}}
+{{- if .Values.configMap.name -}}
+{{- .Values.configMap.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-env" (include "nodejs-helm-template.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end }}
