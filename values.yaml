@@ -4,9 +4,9 @@
 replicaCount: 2
 
 image:
-  repository: asia-docker.pkg.dev/nownews-terraform/nodejs-repo/nodejs-template
+  repository: asia-docker.pkg.dev/nownews-terraform/nodejs-dev-template/nodejs-dev-fn-template
   pullPolicy: IfNotPresent
-  tag: "2.7.0"
+  tag: "1.0.0"
 
 imagePullSecrets: []
 nameOverride: ""
