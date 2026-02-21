@@ -6,8 +6,8 @@ Node.js Helm 基礎模板，預設支援：
 - ConfigMap / Secret envFrom
 - HPA / resources / scheduling 設定
 
-## 1) 快速使用（建議）
-不要複製整個 repo。保留一份 chart，為每個專案建立自己的 values 檔。
+## 1) 快速使用
+保留一份 chart，為每個專案建立自己的 values 檔。
 
 1. 複製範本：
 ```bash
@@ -18,52 +18,16 @@ cp values.project-template.yaml values-myapp.yaml
 - `application.port`, `service.port`
 - `gateway.routes`, `gateway.redirectRoutes`
 - `configMap.data`, `envFrom.secretRefs`
-3. 安裝/更新：
-```bash
-helm upgrade --install myapp . \
-  -n myapp-ns \
-  --create-namespace \
-  -f values-myapp.yaml
-```
 
-## 2) 移植到新專案（同一叢集）
-每個新專案只要確保以下三項不同即可：
-- `release name` 不同（例如 `myapp`, `newsapp`）
-- `namespace` 不同（例如 `myapp-ns`, `newsapp-ns`）
-- `gateway hostname/path` 不互相衝突
+敏感資訊（例如 `DB_PASSWORD`、API token）不要放在 `values*.yaml` / ConfigMap，請放到 Kubernetes Secret，再透過 `envFrom.secretRefs` 引入。
 
-範例：
-```bash
-helm upgrade --install newsapp . \
-  -n newsapp-ns \
-  --create-namespace \
-  -f values-newsapp.yaml
-```
+## 2) ArgoCD 佈署方式
 
-## 3) 你提到的「整包複製 repo」做法（可行，但不建議）
-如果你一定要複製整個資料夾：
-1. 複製目錄並改資料夾名。
-2. 準備新 `values-<project>.yaml`（可由 `values.project-template.yaml` 複製）。
-3. 用新 `release` + 新 `namespace` 部署。
+### 2.1 建立 ArgoCD
+bash ./shell/argocd.sh
 
-注意：
-- 只改資料夾名稱不代表資源名稱會變；資源名稱主要看 Helm `release name`。
-- 若同 namespace + 同 release 安裝，才會衝突。
-
-## 4) 常用指令
-Render 檢查：
-```bash
-helm template myapp . -f values-myapp.yaml
-```
-
-套件檢查：
-```bash
-helm lint . -f values-myapp.yaml
-```
-
-## 5) ArgoCD 佈署方式
-如果要用 ArgoCD 佈署這個 chart，重點是 `Application` 要指定 repo/path/namespace，並指定 values 檔。
-
+### 2.2 建立 App
+不同專案指定不同 values 檔
 CLI 範例（佈署 `nodejs-helm-template`）：
 ```bash
 argocd app create nodejs-helm-template \

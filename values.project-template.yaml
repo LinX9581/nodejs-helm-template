@@ -15,8 +15,15 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podSecurityContext: {}
-securityContext: {}
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
 
 service:
   port: 3000

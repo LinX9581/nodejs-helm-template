@@ -18,8 +18,15 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podSecurityContext: {}
-securityContext: {}
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
 
 otel:
   enabled: true
@@ -41,7 +48,6 @@ configMap:
   data:
     DB_HOST: "172.16.2.200"
     DB_USER: "docker"
-    DB_PASSWORD: "00000000"
     PORT: "3011"
     DEV_PORT: "4006"
 
@@ -51,6 +57,10 @@ envFrom:
     # 空字串時會使用 configMap.name / <release-fullname>-env
     name: ""
   configMapRefs: []
+  # Put sensitive values (DB password, tokens) in Kubernetes Secret.
+  # Example:
+  # kubectl -n nodejs-helm-template create secret generic nodejs-helm-template-secrets \
+  #   --from-literal=DB_PASSWORD='replace-me'
   secretRefs: []
 
 # ---------- Gateway API (取代 nginx-ingress) ----------
@@ -109,7 +119,7 @@ resources: {}
 # ---------- Autoscaling ----------
 autoscaling:
   enabled: true
-  minReplicas: 5
+  minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
