@@ -65,22 +65,6 @@ GATEWAY_IP=$(wait_for_ip "gateway/app-gateway" "default" "{.status.addresses[0].
 info "Gateway IP: $GATEWAY_IP"
 
 # ============================================================
-# 3. 部署應用 (ArgoCD)
-# ============================================================
-
-# --- nodejs-helm-template ---
-info "部署 nodejs-helm-template..."
-kubectl create namespace nodejs-helm-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
-argocd app create nodejs-helm-template \
-  --repo https://github.com/LinX9581/nodejs-helm-template \
-  --path . \
-  --dest-server https://kubernetes.default.svc \
-  --dest-namespace nodejs-helm-template \
-  --upsert
-  # 取消下行註解即可自動同步
-  # --sync-policy automated
-
-# ============================================================
 # 完成
 # ============================================================
 echo ""
