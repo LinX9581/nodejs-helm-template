@@ -18,6 +18,8 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
+podLabels:
+  observability: enabled
 podSecurityContext:
   runAsNonRoot: false
   seccompProfile:

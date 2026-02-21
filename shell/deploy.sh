@@ -70,7 +70,7 @@ info "Gateway IP: $GATEWAY_IP"
 
 # --- nodejs-helm-template ---
 info "部署 nodejs-helm-template..."
-kubectl create namespace nodejs-helm-template --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace nodejs-helm-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
 argocd app create nodejs-helm-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \

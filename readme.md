@@ -29,17 +29,25 @@ bash ./shell/argocd.sh
 ### 2.2 建立 App
 不同專案指定不同 values 檔
 CLI 範例（佈署 `nodejs-helm-template`）：
+
+kubectl create namespace nodejs-helm-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+
 ```bash
 argocd app create nodejs-helm-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \
   --dest-server https://kubernetes.default.svc \
   --dest-namespace nodejs-helm-template \
-  --values values.project-template.yaml \
+  --values values.yaml \
   --upsert
 ```
 
 CLI 範例（第二個 App：`nodejs-helm-bn-template`，同 chart 不同 values）：
+
+kubectl create namespace nodejs-helm-bn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+
+observability=enabled 標籤是為了讓 Alloy 收集日誌
+
 ```bash
 argocd app create nodejs-helm-bn-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
