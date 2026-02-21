@@ -18,8 +18,6 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels:
-  observability: enabled
 podSecurityContext:
   runAsNonRoot: false
   seccompProfile:
@@ -110,13 +108,13 @@ gateway:
       statusCode: 301
 
 # ---------- Resources ----------
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 200m
+    memory: 1024Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
 
 # ---------- Autoscaling ----------
 autoscaling:

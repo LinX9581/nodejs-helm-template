@@ -15,8 +15,6 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels:
-  observability: enabled
 podSecurityContext:
   runAsNonRoot: false
   seccompProfile:
@@ -53,7 +51,13 @@ envFrom:
   configMapRefs: []
   secretRefs: []
 
-resources: {}
+resources:
+  limits:
+    cpu: 200m
+    memory: 1024Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
 
 autoscaling:
   enabled: true
