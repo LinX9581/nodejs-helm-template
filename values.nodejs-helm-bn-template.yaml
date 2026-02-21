@@ -80,3 +80,11 @@ gateway:
     - path: /
       pathType: PathPrefix
   redirectRoutes: []
+
+healthCheckPolicy:
+  enabled: true
+  requestPath: /pod-health
+  checkIntervalSec: 5
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 2

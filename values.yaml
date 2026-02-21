@@ -107,6 +107,14 @@ gateway:
       targetHostname: nodejs.linx.bar
       statusCode: 301
 
+healthCheckPolicy:
+  enabled: true
+  requestPath: /pod-health
+  checkIntervalSec: 5
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 2
+
 # ---------- Resources ----------
 resources:
   limits:

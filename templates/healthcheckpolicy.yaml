@@ -1,0 +1,23 @@
+{{- if and .Values.gateway.enabled .Values.healthCheckPolicy.enabled -}}
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ include "nodejs-helm-template.fullname" . }}
+  labels:
+    {{- include "nodejs-helm-template.labels" . | nindent 4 }}
+spec:
+  default:
+    checkIntervalSec: {{ .Values.healthCheckPolicy.checkIntervalSec }}
+    timeoutSec: {{ .Values.healthCheckPolicy.timeoutSec }}
+    healthyThreshold: {{ .Values.healthCheckPolicy.healthyThreshold }}
+    unhealthyThreshold: {{ .Values.healthCheckPolicy.unhealthyThreshold }}
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: {{ .Values.healthCheckPolicy.requestPath | quote }}
+        portSpecification: USE_SERVING_PORT
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "nodejs-helm-template.fullname" . }}
+{{- end }}

@@ -91,3 +91,11 @@ gateway:
     - hostname: www.app.example.com
       targetHostname: app.example.com
       statusCode: 301
+
+healthCheckPolicy:
+  enabled: true
+  requestPath: /pod-health
+  checkIntervalSec: 5
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 2
