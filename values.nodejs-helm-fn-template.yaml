@@ -8,31 +8,6 @@ image:
   pullPolicy: IfNotPresent
   tag: "1.0.0"
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
-
-podAnnotations: {}
-podSecurityContext:
-  runAsNonRoot: false
-  seccompProfile:
-    type: RuntimeDefault
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-
-otel:
-  enabled: true
-  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
-  injectorAnnotationValue: "true"
-
 # ---------- Service ----------
 service:
   type: ClusterIP
@@ -43,7 +18,6 @@ application:
 
 configMap:
   create: true
-  # 空字串時會使用: <release-fullname>-env
   name: ""
   data:
     DB_HOST: "172.16.2.200"
@@ -54,13 +28,8 @@ configMap:
 envFrom:
   configMap:
     enabled: true
-    # 空字串時會使用 configMap.name / <release-fullname>-env
     name: ""
   configMapRefs: []
-  # Put sensitive values (DB password, tokens) in Kubernetes Secret.
-  # Example:
-  # kubectl -n nodejs-helm-template create secret generic nodejs-helm-template-secrets \
-  #   --from-literal=DB_PASSWORD='replace-me'
   secretRefs: []
 
 # ---------- Gateway API (取代 nginx-ingress) ----------
@@ -136,7 +105,34 @@ updateStrategy:
   maxUnavailable: 0
   maxSurge: 1
 
+# 佈署的 node 位置
 nodeSelector:
   workload: app
 tolerations: []
 affinity: {}
+
+# 收 Trace Log 到 Tempo
+otel:
+  enabled: true
+  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
+  injectorAnnotationValue: "true"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: false
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL

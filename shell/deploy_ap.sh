@@ -24,7 +24,7 @@ NAMESPACE="${NAMESPACE:-nodejs-helm-fn-template}"
 VALUES_FILE="${VALUES_FILE:-values.nodejs-helm-fn-template.yaml}"
 REPO_URL="${REPO_URL:-https://github.com/LinX9581/nodejs-helm-template}"
 PATH_IN_REPO="${PATH_IN_REPO:-.}"
-ENABLE_TEMPO="${ENABLE_TEMPO:-N}"
+ENABLE_TEMPO="${ENABLE_TEMPO:-Y}"
 
 info "Step 1/6 建立並標記 namespace"
 kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml \

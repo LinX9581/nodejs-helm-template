@@ -1,9 +1,108 @@
-# Copy this file for each new project, then only update these fields.
+# Default values for nodejs-helm-template.
+# Gateway API + GKE 專案範本
+
+replicaCount: 2
 
 image:
   repository: asia-docker.pkg.dev/your-gcp-project/your-repo/your-app
   pullPolicy: IfNotPresent
   tag: "1.0.0"
+
+# ---------- Service ----------
+service:
+  type: ClusterIP
+  port: 3000
+
+application:
+  port: 3000
+
+configMap:
+  create: true
+  name: ""
+  data:
+    DB_HOST: "10.0.0.10"
+    DB_USER: "app_user"
+    PORT: "3000"
+    DEV_PORT: "4000"
+
+envFrom:
+  configMap:
+    enabled: true
+    name: ""
+  configMapRefs: []
+  secretRefs: []
+
+# ---------- Gateway API (取代 nginx-ingress) ----------
+gateway:
+  enabled: true
+  gatewayName: app-gateway
+  gatewayNamespace: default
+
+  routes:
+    - hostname: app.example.com
+
+  rules:
+    - path: /test
+      pathType: Exact
+      redirect:
+        path: /
+        statusCode: 302
+
+    - path: /wp-content
+      pathType: PathPrefix
+
+    - path: /wp-admin
+      pathType: PathPrefix
+
+    - path: /news
+      pathType: PathPrefix
+
+    - path: /cat
+      pathType: PathPrefix
+
+  redirectRoutes:
+    - hostname: www.app.example.com
+      targetHostname: app.example.com
+      statusCode: 301
+
+healthCheckPolicy:
+  enabled: true
+  requestPath: /pod-health
+  checkIntervalSec: 5
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 2
+
+# ---------- Resources ----------
+resources:
+  limits:
+    cpu: 200m
+    memory: 1024Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+
+# ---------- Autoscaling ----------
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+updateStrategy:
+  type: RollingUpdate
+  maxUnavailable: 0
+  maxSurge: 1
+
+nodeSelector:
+  workload: app
+tolerations: []
+affinity: {}
+
+otel:
+  enabled: true
+  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
+  injectorAnnotationValue: "true"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -24,78 +123,3 @@ securityContext:
   capabilities:
     drop:
       - ALL
-
-service:
-  port: 3000
-
-application:
-  port: 3000
-
-otel:
-  enabled: true
-  injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
-  injectorAnnotationValue: "true"
-
-configMap:
-  create: true
-  # Leave empty to auto-generate "<release-fullname>-env"
-  name: ""
-  data:
-    APP_ENV: "prod"
-    PORT: "3000"
-    DB_HOST: "10.0.0.10"
-    DB_USER: "app_user"
-
-envFrom:
-  configMap:
-    enabled: true
-    name: ""
-  configMapRefs: []
-  secretRefs:
-    - app-secrets
-
-# ---------- Resources ----------
-resources: {}
-resources:
-  limits:
-    cpu: 200m
-    memory: 1024Mi
-  requests:
-    cpu: 50m
-    memory: 256Mi
-
-# ---------- Autoscaling ----------
-autoscaling:
-  enabled: false
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-
-nodeSelector:
-  workload: app
-tolerations: []
-affinity: {}
-
-gateway:
-  enabled: true
-  gatewayName: app-gateway
-  gatewayNamespace: default
-  routes:
-    - hostname: app.example.com
-  rules:
-    - path: /healthz
-      pathType: Exact
-    - path: /
-      pathType: PathPrefix
-  redirectRoutes:
-    - hostname: www.app.example.com
-      targetHostname: app.example.com
-      statusCode: 301
-
-healthCheckPolicy:
-  enabled: true
-  requestPath: /pod-health
-  checkIntervalSec: 5
-  timeoutSec: 5
-  healthyThreshold: 2
-  unhealthyThreshold: 2
