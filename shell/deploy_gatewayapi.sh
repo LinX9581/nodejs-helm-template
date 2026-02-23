@@ -9,7 +9,7 @@ set -e
 info()  { echo "[INFO] $1"; }
 warn()  { echo "[WAIT] $1" >&2; }
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="/etc/nginx/ssl"
 
 wait_for_ip() {
   local resource=$1 ns=$2 jsonpath=$3 ip=""
@@ -26,8 +26,8 @@ wait_for_ip() {
 # ============================================================
 info "建立 TLS Secret..."
 kubectl create secret tls linx-bar-tls \
-  --cert="$SCRIPT_DIR/ssl/linx-bar.crt" \
-  --key="$SCRIPT_DIR/ssl/linx-bar.key" \
+  --cert="${SCRIPT_DIR}/linx-bar.crt" \
+  --key="${SCRIPT_DIR}/linx-bar.key" \
   -n default --dry-run=client -o yaml | kubectl apply -f -
 
 # ============================================================

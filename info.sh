@@ -5,6 +5,9 @@ set -euo pipefail
 NS_ARGOCD="argocd"
 NS_MONITORING="monitoring"
 NS_APP="nodejs-helm-template"
+NS_ELK="elk"
+KIBANA_SVC_NAME="kibana-kibana"
+ELASTIC_SECRET_NAME="elasticsearch-master-credentials"
 SINCE="5m"
 TAIL_LINES="120"
 LOKI_LIMIT="200"
@@ -37,6 +40,22 @@ grafana_ip="$(kubectl get svc/kube-prometheus-grafana -n "${NS_MONITORING}" -o j
 grafana_pwd="$(kubectl -n "${NS_MONITORING}" get secret grafana -o jsonpath='{.data.admin-password}' 2>/dev/null | base64 --decode || true)"
 if [[ -z "${grafana_pwd}" ]]; then
   grafana_pwd="$(kubectl -n "${NS_MONITORING}" get secret kube-prometheus-grafana -o jsonpath='{.data.admin-password}' 2>/dev/null | base64 --decode || true)"
+fi
+
+elk_ip="${ELK_LB_IP:-}"
+if [[ -z "${elk_ip}" ]]; then
+  elk_ip="$(kubectl get svc "${KIBANA_SVC_NAME}" -n "${NS_ELK}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)"
+fi
+if [[ -z "${elk_ip}" ]]; then
+  elk_ip="$(kubectl get svc "${KIBANA_SVC_NAME}" -n "${NS_ELK}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
+fi
+
+elk_pwd="$(kubectl -n "${NS_ELK}" get secret "${ELASTIC_SECRET_NAME}" -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)"
+if [[ -z "${elk_pwd}" ]]; then
+  elk_pwd="$(kubectl -n "${NS_ELK}" get secret elasticsearch-es-elastic-user -o jsonpath='{.data.elastic}' 2>/dev/null | base64 -d || true)"
+fi
+if [[ -z "${elk_pwd}" ]]; then
+  elk_pwd="$(kubectl -n "${NS_ELK}" get secret kibana-system -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)"
 fi
 
 dns_ip="$(kubectl get gateway app-gateway -n default -o jsonpath='{.status.addresses[0].value}' 2>/dev/null || true)"
@@ -96,6 +115,8 @@ echo "ArgoCD IP       : ${argocd_ip:-N/A}"
 echo "ArgoCD Password : ${argocd_pwd:-N/A}"
 echo "Grafana IP      : ${grafana_ip:-N/A}"
 echo "Grafana Password: ${grafana_pwd:-N/A}"
+echo "ELK (Kibana) IP : ${elk_ip:-N/A}"
+echo "ELK Password    : ${elk_pwd:-N/A}"
 echo "DNS Bind IP     : ${dns_ip:-N/A}"
 
 echo
