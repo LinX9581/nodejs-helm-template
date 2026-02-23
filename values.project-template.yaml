@@ -35,8 +35,8 @@ envFrom:
 # ---------- Gateway API (取代 nginx-ingress) ----------
 gateway:
   enabled: true
-  gatewayName: app-gateway
-  gatewayNamespace: default
+  gatewayName: traefik-gateway
+  gatewayNamespace: traefik
 
   routes:
     - hostname: app.example.com
@@ -66,7 +66,7 @@ gateway:
       statusCode: 301
 
 healthCheckPolicy:
-  enabled: true
+  enabled: false
   requestPath: /pod-health
   checkIntervalSec: 5
   timeoutSec: 5

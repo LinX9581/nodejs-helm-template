@@ -16,12 +16,12 @@ need_cmd kubectl
 need_cmd argocd
 
 # 常用的 NS 和 values
-# nodejs-helm-template , nodejs-helm-bn-template
-# values.nodejs-helm-fn-template.yaml , values.nodejs-helm-bn-template.yaml
+# nodejs-fn-template , nodejs-bn-template
+# values.nodejs-fn-template.yaml , values.nodejs-bn-template.yaml
 
-APP_NAME="${APP_NAME:-nodejs-helm-fn-template}"
-NAMESPACE="${NAMESPACE:-nodejs-helm-fn-template}"
-VALUES_FILE="${VALUES_FILE:-values.nodejs-helm-fn-template.yaml}"
+APP_NAME="${APP_NAME:-nodejs-fn-template}"
+NAMESPACE="${NAMESPACE:-nodejs-fn-template}"
+VALUES_FILE="${VALUES_FILE:-values.nodejs-fn-template.yaml}"
 REPO_URL="${REPO_URL:-https://github.com/LinX9581/nodejs-helm-template}"
 PATH_IN_REPO="${PATH_IN_REPO:-.}"
 ENABLE_TEMPO="${ENABLE_TEMPO:-Y}"

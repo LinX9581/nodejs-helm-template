@@ -40,6 +40,11 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
+updateStrategy:
+  type: RollingUpdate
+  maxUnavailable: 0
+  maxSurge: 1
+
 nodeSelector:
   workload: app
 tolerations: []
@@ -47,8 +52,8 @@ affinity: {}
 
 gateway:
   enabled: true
-  gatewayName: app-gateway
-  gatewayNamespace: default
+  gatewayName: traefik-gateway
+  gatewayNamespace: traefik
   routes:
     - hostname: nodejs-bn.linx.bar
   rules:
@@ -57,7 +62,7 @@ gateway:
   redirectRoutes: []
 
 healthCheckPolicy:
-  enabled: true
+  enabled: false
   requestPath: /pod-health
   checkIntervalSec: 5
   timeoutSec: 5

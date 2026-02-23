@@ -35,8 +35,8 @@ envFrom:
 # ---------- Gateway API (取代 nginx-ingress) ----------
 gateway:
   enabled: true
-  gatewayName: app-gateway        # argocd.sh 建立的 Gateway
-  gatewayNamespace: default
+  gatewayName: traefik-gateway
+  gatewayNamespace: traefik
 
   # 主要路由 (非重定向的 hostname)
   routes:
@@ -77,7 +77,7 @@ gateway:
       statusCode: 301
 
 healthCheckPolicy:
-  enabled: true
+  enabled: false
   requestPath: /pod-health
   checkIntervalSec: 5
   timeoutSec: 5
