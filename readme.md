@@ -2,7 +2,7 @@
 
 Node.js Helm 基礎模板，預設支援：
 - Gateway API (`HTTPRoute`)
-- OpenTelemetry injector annotation
+- OpenTelemetry injector annotation + `Instrumentation`
 - ConfigMap / Secret envFrom
 - HPA / resources / scheduling 設定
 

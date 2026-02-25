@@ -1,0 +1,30 @@
+{{- if and .Values.otel.enabled .Values.otel.instrumentation.enabled }}
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: {{ .Values.otel.instrumentation.name | default "otel-instrumentation" }}
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ .Values.otel.instrumentation.syncWave | default "-1" | quote }}
+spec:
+  exporter:
+    endpoint: {{ .Values.otel.instrumentation.exporter.endpoint | quote }}
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    type: parentbased_traceidratio
+    argument: "1"
+  nodejs:
+    image: {{ .Values.otel.instrumentation.nodejs.image | quote }}
+    env:
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: {{ .Values.otel.instrumentation.nodejs.protocol | quote }}
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: {{ .Values.otel.instrumentation.nodejs.tracesEndpoint | quote }}
+      - name: OTEL_SERVICE_NAME
+        value: {{ .Values.otel.instrumentation.nodejs.serviceName | default .Release.Namespace | quote }}
+      - name: OTEL_METRICS_EXPORTER
+        value: {{ .Values.otel.instrumentation.nodejs.metricsExporter | quote }}
+      - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+        value: {{ .Values.otel.instrumentation.nodejs.metricsEndpoint | quote }}
+{{- end }}

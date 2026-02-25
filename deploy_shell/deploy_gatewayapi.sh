@@ -30,6 +30,7 @@ TRAEFIK_SVC_NAME="${TRAEFIK_SVC_NAME:-traefik}"
 TRAEFIK_GATEWAY_NAME="${TRAEFIK_GATEWAY_NAME:-traefik-gateway}"
 TRAEFIK_GATEWAY_CLASS="${TRAEFIK_GATEWAY_CLASS:-traefik}"
 TRAEFIK_GATEWAY_PORT="${TRAEFIK_GATEWAY_PORT:-8000}"
+TRAEFIK_REPLICAS="${TRAEFIK_REPLICAS:-2}"
 EDGE_TO_TRAEFIK_HOSTNAMES="${EDGE_TO_TRAEFIK_HOSTNAMES:-}"
 
 wait_for_ip() {
@@ -61,10 +62,14 @@ helm repo update >/dev/null
 helm upgrade --install "$TRAEFIK_RELEASE" traefik/traefik \
   --namespace "$TRAEFIK_NAMESPACE" \
   --create-namespace \
+  --set deployment.replicas="$TRAEFIK_REPLICAS" \
   --set service.type=ClusterIP \
   --set providers.kubernetesGateway.enabled=true \
   --set providers.kubernetesCRD.enabled=true \
   --set providers.kubernetesIngress.enabled=false \
+  --set "additionalArguments={--ping=true}" \
+  --set ingressRoute.healthcheck.enabled=true \
+  --set "ingressRoute.healthcheck.entryPoints={web}" \
   --wait --timeout 600s
 
 info "建立 Traefik GatewayClass/Gateway..."
@@ -90,6 +95,30 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+EOF
+
+info "套用 Traefik Service HealthCheckPolicy (/ping)..."
+kubectl apply -f - <<EOF
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: traefik-service-hc
+  namespace: ${TRAEFIK_NAMESPACE}
+spec:
+  default:
+    checkIntervalSec: 5
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: /ping
+        portSpecification: USE_SERVING_PORT
+  targetRef:
+    group: ""
+    kind: Service
+    name: ${TRAEFIK_SVC_NAME}
 EOF
 
 # ============================================================

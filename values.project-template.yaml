@@ -103,6 +103,19 @@ otel:
   enabled: true
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
   injectorAnnotationValue: "true"
+  instrumentation:
+    enabled: true
+    name: otel-instrumentation
+    syncWave: "-1"
+    exporter:
+      endpoint: http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318
+    nodejs:
+      image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:latest
+      protocol: http/protobuf
+      tracesEndpoint: http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces
+      serviceName: ""
+      metricsExporter: otlp
+      metricsEndpoint: http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318/v1/metrics
 
 imagePullSecrets: []
 nameOverride: ""
