@@ -113,7 +113,7 @@ affinity: {}
 
 # 收 Trace Log 到 Tempo
 otel:
-  enabled: false
+  enabled: true
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
   injectorAnnotationValue: "true"
   instrumentation:
@@ -123,7 +123,7 @@ otel:
     exporter:
       endpoint: http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318
     nodejs:
-      image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:latest
+      image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:0.64.1
       protocol: http/protobuf
       tracesEndpoint: http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces
       serviceName: ""

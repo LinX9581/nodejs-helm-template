@@ -28,38 +28,38 @@ bash ./shell/argocd.sh
 
 ### 2.2 建立 App
 不同專案指定不同 values 檔
-CLI 範例（佈署 `nodejs-helm-template`）：
+CLI 範例（佈署 `nodejs-fn-template`）：
 
-kubectl create namespace nodejs-helm-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+kubectl create namespace nodejs-fn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
 
 ```bash
-argocd app create nodejs-helm-template \
+argocd app create nodejs-fn-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace nodejs-helm-template \
-  --values values.yaml \
+  --dest-namespace nodejs-fn-template \
+  --values values.nodejs-fn-template.yaml \
   --upsert
 ```
 
-CLI 範例（第二個 App：`nodejs-helm-bn-template`，同 chart 不同 values）：
+CLI 範例（第二個 App：`nodejs-bn-template`，同 chart 不同 values）：
 
-kubectl create namespace nodejs-helm-bn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+kubectl create namespace nodejs-bn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
 
 observability=enabled 標籤是為了讓 Alloy 收集日誌
 
 ```bash
-argocd app create nodejs-helm-bn-template \
+argocd app create nodejs-bn-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace nodejs-helm-bn-template \
-  --values values.nodejs-helm-bn-template.yaml \
+  --dest-namespace nodejs-bn-template \
+  --values values.nodejs-bn-template.yaml \
   --upsert
 ```
 
 更新/同步：
 ```bash
-argocd app sync nodejs-helm-template
-argocd app sync nodejs-helm-bn-template
+argocd app sync nodejs-fn-template
+argocd app sync nodejs-bn-template
 ```
