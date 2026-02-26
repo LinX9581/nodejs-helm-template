@@ -113,7 +113,7 @@ affinity: {}
 
 # 收 Trace Log 到 Tempo
 otel:
-  enabled: false
+  enabled: true
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
   injectorAnnotationValue: "true"
   instrumentation:

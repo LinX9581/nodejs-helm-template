@@ -113,6 +113,7 @@ done < <(
 echo "==================== Access ===================="
 echo "ArgoCD IP       : ${argocd_ip:-N/A}"
 echo "ArgoCD Password : ${argocd_pwd:-N/A}"
+echo "ArgoCD CLI Login: argocd login ${argocd_ip:-<IP>} --username admin --password '${argocd_pwd:-<PWD>}' --insecure"
 echo "Grafana IP      : ${grafana_ip:-N/A}"
 echo "Grafana Password: ${grafana_pwd:-N/A}"
 echo "ELK (Kibana) IP : ${elk_ip:-N/A}"
