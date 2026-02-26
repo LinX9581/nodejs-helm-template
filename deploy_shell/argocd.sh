@@ -55,6 +55,45 @@ info "安裝 ArgoCD..."
 kubectl create namespace "$ARGOCD_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -n "$ARGOCD_NAMESPACE" --server-side --force-conflicts -f "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
 
+# ---------- 指定 ArgoCD 到 system node pool ----------
+info "Patch ArgoCD Deployments → system node pool..."
+
+NODE_SELECTOR='{"workload": "system"}'
+TOLERATION='[{"key": "dedicated", "value": "system", "effect": "NoSchedule"}]'
+PATCH_JSON=$(cat <<EOF
+{
+  "spec": {
+    "template": {
+      "spec": {
+        "nodeSelector": ${NODE_SELECTOR},
+        "tolerations": ${TOLERATION}
+      }
+    }
+  }
+}
+EOF
+)
+
+for deploy in $(kubectl get deploy -n "$ARGOCD_NAMESPACE" -o name); do
+  info "  Patching $deploy ..."
+  kubectl patch "$deploy" -n "$ARGOCD_NAMESPACE" --type merge -p "$PATCH_JSON"
+done
+
+# 同時 patch StatefulSet（如 argocd-application-controller）
+for sts in $(kubectl get statefulset -n "$ARGOCD_NAMESPACE" -o name 2>/dev/null); do
+  info "  Patching $sts ..."
+  kubectl patch "$sts" -n "$ARGOCD_NAMESPACE" --type merge -p "$PATCH_JSON"
+done
+
+# 等待所有 rollout 完成（避免舊 Pod 被刪時 wait 報 NotFound）
+warn "等待 ArgoCD rollout 完成..."
+for deploy in $(kubectl get deploy -n "$ARGOCD_NAMESPACE" -o name); do
+  kubectl rollout status "$deploy" -n "$ARGOCD_NAMESPACE" --timeout=300s
+done
+for sts in $(kubectl get statefulset -n "$ARGOCD_NAMESPACE" -o name 2>/dev/null); do
+  kubectl rollout status "$sts" -n "$ARGOCD_NAMESPACE" --timeout=300s
+done
+
 warn "等待 ArgoCD pods 就緒..."
 kubectl wait --for=condition=Ready pod --all -n "$ARGOCD_NAMESPACE" --timeout=300s
 
@@ -98,4 +137,4 @@ echo "  CLI : argocd login ${ARGOCD_ENDPOINT} --username admin --password '$ARGO
 # ---------- 登入 ArgoCD CLI ----------
 argocd login "$ARGOCD_ENDPOINT" --username admin --password "$ARGOCD_PASSWORD" --insecure
 
-info "ArgoCD 就緒，接下來請執行: bash deploy.sh"
+info "ArgoCD 就緒，接下來請執行: bash deploy_ap.sh"
