@@ -70,7 +70,7 @@ healthCheckPolicy:
   unhealthyThreshold: 2
 
 otel:
-  enabled: false
+  enabled: true
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
   injectorAnnotationValue: "true"
   instrumentation:
