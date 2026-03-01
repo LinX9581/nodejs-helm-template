@@ -72,7 +72,7 @@ healthCheckPolicy:
 otel:
   enabled: true
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
-  injectorAnnotationValue: "true"  
+  injectorAnnotationValue: "otel-instrumentation"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
