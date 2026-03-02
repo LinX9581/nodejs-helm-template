@@ -99,7 +99,7 @@ nodeSelector:
 tolerations: []
 affinity: {}
 
-# 收 Trace Log 到 Tempo (由 Platform 端管理 Instrumentation CR)
+# 收 Trace 到 Tempo（Log 請看 Loki）(由 Platform 端管理 Instrumentation CR)
 # 設為 true 後 Pod 會自動被注入 OTel auto-instrumentation SDK
 otel:
   enabled: true
