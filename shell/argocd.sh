@@ -135,6 +135,17 @@ echo "  密碼: $ARGOCD_PASSWORD"
 echo "  CLI : argocd login ${ARGOCD_ENDPOINT} --username admin --password '$ARGOCD_PASSWORD' --insecure"
 
 # ---------- 登入 ArgoCD CLI ----------
-argocd login "$ARGOCD_ENDPOINT" --username admin --password "$ARGOCD_PASSWORD" --insecure
+CLI_VERSION_RAW="$(argocd version --client 2>/dev/null | awk '/^argocd:/{print $2; exit}')"
+CLI_VERSION_MM="$(echo "${CLI_VERSION_RAW:-}" | sed -E 's/^v?([0-9]+\.[0-9]+).*/\1/')"
+SERVER_VERSION_MM="$(echo "${ARGOCD_VERSION}" | sed -E 's/^v?([0-9]+\.[0-9]+).*/\1/')"
+
+if [[ -n "$CLI_VERSION_MM" && "$CLI_VERSION_MM" != "$SERVER_VERSION_MM" ]]; then
+  warn "偵測到 argocd CLI 版本($CLI_VERSION_RAW) 與 server 版本($ARGOCD_VERSION) 不一致，可能導致 gRPC login timeout。"
+  warn "請改用與 server 相同 major.minor 的 CLI 版本再登入。"
+  echo "  下載: curl -L -o /tmp/argocd-${ARGOCD_VERSION}-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64 && chmod +x /tmp/argocd-${ARGOCD_VERSION}-linux-amd64"
+  echo "  登入: /tmp/argocd-${ARGOCD_VERSION}-linux-amd64 login ${ARGOCD_ENDPOINT} --username admin --password '$ARGOCD_PASSWORD' --insecure"
+else
+  argocd login "$ARGOCD_ENDPOINT" --username admin --password "$ARGOCD_PASSWORD" --insecure
+fi
 
 info "ArgoCD 就緒，接下來請執行: bash deploy_ap.sh"
