@@ -30,7 +30,8 @@ envFrom:
     enabled: true
     name: ""
   configMapRefs: []
-  secretRefs: []
+  secretRefs:
+    - nodejs-fn-template-secrets
 
 # ---------- Gateway API ----------
 gateway:

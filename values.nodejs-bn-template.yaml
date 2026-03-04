@@ -24,7 +24,8 @@ envFrom:
     enabled: true
     name: ""
   configMapRefs: []
-  secretRefs: []
+  secretRefs:
+    - nodejs-bn-template-secrets
 
 resources:
   limits:
