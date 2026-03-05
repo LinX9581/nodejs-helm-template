@@ -39,8 +39,8 @@ resources:
 # ---------- Autoscaling ----------
 autoscaling:
   enabled: true
-  minReplicas: 10
-  maxReplicas: 30
+  minReplicas: 20
+  maxReplicas: 100
   targetCPUUtilizationPercentage: 60
 
 updateStrategy:
@@ -73,7 +73,7 @@ healthCheckPolicy:
   unhealthyThreshold: 2
 
 otel:
-  enabled: true
+  enabled: false
   injectorAnnotationKey: instrumentation.opentelemetry.io/inject-nodejs
   injectorAnnotationValue: "true"
 imagePullSecrets: []
