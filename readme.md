@@ -33,6 +33,16 @@ observability=enabled 標籤是為了讓 Alloy 收集日誌
 佈署 nodejs-fn-template
 ```bash
 kubectl create namespace nodejs-fn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+
+# create secret
+cp .env.example .env.fn
+NAMESPACE=nodejs-fn-template \
+SECRET_NAME=nodejs-fn-template-secrets \
+ENV_FILE=.env.fn \
+DEPLOYMENT=nodejs-fn-template-nodejs-helm-template \
+bash ./manage-secrets.sh
+
+# create app
 argocd app create nodejs-fn-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \
@@ -47,6 +57,16 @@ argocd app sync nodejs-fn-template
 
 ```bash
 kubectl create namespace nodejs-bn-template --dry-run=client -o yaml | kubectl label -f - observability=enabled --local -o yaml | kubectl apply -f -
+
+# create secret
+cp .env.example .env.bn
+NAMESPACE=nodejs-bn-template \
+SECRET_NAME=nodejs-bn-template-secrets \
+ENV_FILE=.env.bn \
+DEPLOYMENT=nodejs-bn-template-nodejs-helm-template \
+bash ./manage-secrets.sh
+
+# create app
 argocd app create nodejs-bn-template \
   --repo https://github.com/LinX9581/nodejs-helm-template \
   --path . \
